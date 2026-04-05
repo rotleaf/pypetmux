@@ -164,12 +164,13 @@ impl Server {
             .ok();
 
         if let Some(output) = output
-            && output.status.success() {
-                let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                if !s.is_empty() {
-                    return Some(s);
-                }
+            && output.status.success()
+        {
+            let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !s.is_empty() {
+                return Some(s);
             }
+        }
 
         Self::default_socket_path()
     }
@@ -177,6 +178,7 @@ impl Server {
 
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Server>()?;
+    // session::register(m)?;
     Ok(())
 }
 

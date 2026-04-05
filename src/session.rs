@@ -67,7 +67,9 @@ impl Session {
     fn __str__(&self) -> String {
         self.__repr__()
     }
-    /// get windows in a session
+
+    /// get a list of all windows in a session
+    /// #[getter]
     pub fn windows(&self) -> Vec<Window> {
         let target = self.name.clone();
         let output = self
@@ -105,8 +107,9 @@ impl Session {
         }
     }
 
-    /// rename a session
-    pub fn rename(&mut self, new_name: String) -> PyResult<bool> {
+    /// renames a session with the newname provided
+    #[setter]
+    pub fn set_name(&mut self, new_name: String) -> PyResult<()> {
         let output = self
             .cmd()
             .args(["rename-session", "-t", &self.name, &new_name])
@@ -120,10 +123,10 @@ impl Session {
         }
 
         self.name = new_name;
-        Ok(true)
+        Ok(())
     }
 
-    /// get a sessions metadata
+    /// get session metadata
     pub fn metadata(&self) -> PyResult<SessionMetadata> {
         let fmt = "#{session_id}|#{session_name}|#{session_created}|#{session_attached}|#{session_width}|#{session_height}|#{session_windows}";
 
@@ -179,17 +182,6 @@ impl Session {
         )))
     }
 
-    #[getter]
-    pub fn exists(&self) -> bool {
-        self.cmd()
-            .args(["has-session", "-t", &self.name])
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .status()
-            .map(|s| s.success())
-            .unwrap_or(false)
-    }
-
     pub fn kill(&self) -> bool {
         self.cmd()
             .args(["kill-session", "-t", &self.name])
@@ -204,5 +196,6 @@ impl Session {
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Session>()?;
     m.add_class::<SessionMetadata>()?;
+    // window::register(m)?;
     Ok(())
 }

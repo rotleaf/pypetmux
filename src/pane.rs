@@ -1,4 +1,4 @@
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyRuntimeError, prelude::*};
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use std::process::{Command, Stdio};
 
@@ -33,6 +33,47 @@ impl Pane {
             title,
             socket,
         }
+    }
+
+    #[pyo3(signature = (keys, enter = false, clear_first=false))]
+    pub fn send_keys(&self, keys: String, enter: bool, clear_first: bool) -> PyResult<bool> {
+        let mut cmd = self.cmd();
+        let target = self.target();
+        if clear_first {
+            let output = self
+                .cmd()
+                .args(["send-keys", "-t", target, "C-l"])
+                .stdout(Stdio::null())
+                .stderr(Stdio::piped())
+                .output()
+                .map_err(|e| PyRuntimeError::new_err(format!("failed to run tmux: {e}")))?;
+
+            if !output.status.success() {
+                return Err(PyRuntimeError::new_err(format!(
+                    "tmux send-keys clear failed: {}",
+                    String::from_utf8_lossy(&output.stderr).trim()
+                )));
+            }
+        }
+        cmd.args(["send-keys", "-t", target, &keys]);
+        if enter {
+            cmd.arg("Enter");
+        }
+
+        let output = cmd
+            .stdout(Stdio::null())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| PyRuntimeError::new_err(format!("failed to run tmux: {e}")))?;
+
+        if !output.status.success() {
+            return Err(PyRuntimeError::new_err(format!(
+                "tmux send-keys failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            )));
+        }
+
+        Ok(true)
     }
 
     #[getter]

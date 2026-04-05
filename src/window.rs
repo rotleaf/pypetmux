@@ -1,4 +1,4 @@
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use std::process::{Command, ExitStatus, Stdio};
@@ -81,6 +81,7 @@ impl Window {
         self.__repr__()
     }
 
+    /// kill window
     pub fn kill(&self) -> bool {
         let target = self.target();
         self.cmd()
@@ -92,6 +93,7 @@ impl Window {
             .unwrap_or(false)
     }
 
+    /// select a window if not selected
     #[getter]
     pub fn select(&self) -> bool {
         let target = self.target();
@@ -104,7 +106,8 @@ impl Window {
             .unwrap_or(false)
     }
 
-    pub fn rename(&mut self, new_name: String) -> bool {
+    #[setter]
+    pub fn set_name(&mut self, new_name: String) -> PyResult<()> {
         let target = self.target();
         let ok = self
             .cmd()
@@ -116,12 +119,17 @@ impl Window {
             .unwrap_or(false);
 
         if ok {
-            self.name = new_name
+            self.name = new_name;
+            Ok(())
+        } else {
+            Err(PyValueError::new_err(format!(
+                "failed to rename window to '{}'",
+                new_name
+            )))
         }
-
-        ok
     }
 
+    /// list panes in a window
     #[getter]
     pub fn panes(&self) -> Vec<Pane> {
         let target = self.target();
@@ -166,6 +174,7 @@ impl Window {
         }
     }
 
+    /// get window metadata
     #[getter]
     pub fn metadata(&self) -> PyResult<WindowMetadata> {
         let target = self.target();
@@ -232,5 +241,6 @@ impl Window {
 
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Window>()?;
+    // pane::register(m)?;
     Ok(())
 }

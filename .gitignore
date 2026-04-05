@@ -1,5 +1,6 @@
 /target
 
+test.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .pytest_cache/
@@ -12,7 +13,6 @@ __pycache__/
 .Python
 .venv/
 env/
-bin/
 build/
 develop-eggs/
 dist/
