@@ -4,6 +4,7 @@
 import builtins
 import typing
 __all__ = [
+    "LastCommand",
     "Pane",
     "Server",
     "Session",
@@ -11,6 +12,31 @@ __all__ = [
     "Window",
     "WindowMetadata",
 ]
+
+@typing.final
+class LastCommand:
+    @property
+    def pane_id(self) -> builtins.str: ...
+    @property
+    def socket(self) -> typing.Optional[builtins.str]: ...
+    def __repr__(self) -> builtins.str: ...
+    def __str__(self) -> builtins.str: ...
+    def read(self) -> builtins.str:
+        r"""
+        Read the last bash command from this pane.
+        
+        Returns:
+            The last command as a string.
+        
+        WARNING: using this function might mess up your pane history
+        """
+    def run(self) -> builtins.bool:
+        r"""
+        Run the last bash command from this pane.
+        
+        Returns:
+            True on success.
+        """
 
 @typing.final
 class Pane:
@@ -53,6 +79,8 @@ class Pane:
         get this panes current running command with its arguments
         will be the shell name if no program is active
         """
+    @property
+    def last_command(self) -> LastCommand: ...
     def __new__(cls, session_name: builtins.str, window_index: builtins.int, pane_index: builtins.int, pane_id: builtins.str, title: builtins.str, socket: typing.Optional[builtins.str]) -> Pane: ...
     def send_keys(self, keys: builtins.str, enter: builtins.bool = False, clear_first: builtins.bool = False) -> builtins.bool: ...
     def capture(self, trim: builtins.bool = False) -> typing.Optional[builtins.str]:
@@ -102,16 +130,6 @@ class Pane:
         Args:
             respawn: If True, kill the current pane process and respawn it as bash.
                      If False, run `exec bash` inside the pane.
-        """
-    def run_previous_command(self) -> builtins.bool:
-        r"""
-        Repeat the previous command in this pane's bash shell.
-        
-        Returns:
-            True on success.
-        
-        Raises:
-            RuntimeError: If the pane is not currently running bash.
         """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
