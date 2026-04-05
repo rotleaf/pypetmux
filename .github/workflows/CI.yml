@@ -193,7 +193,7 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Keep only PyPI-valid firre distributions
+      - name: Keep only PyPI-valid pypetmux distributions
         shell: bash
         run: |
           shopt -s nullglob
@@ -201,12 +201,12 @@ jobs:
           for f in dist/*; do
             base="$(basename "$f")"
             case "$base" in
-              firre-*.whl|firre-*.tar.gz) ;;
+              pypetmux-*.whl|pypetmux-*.tar.gz) ;;
               *) rm -f "$f" ;;
             esac
           done
 
-          for f in dist/firre-*.whl; do
+          for f in dist/pypetmux-*.whl; do
             base="$(basename "$f")"
             if [[ "$base" == *-linux_* ]] && [[ "$base" != *manylinux* ]] && [[ "$base" != *musllinux* ]]; then
               echo "Removing non-PyPI wheel: $base"

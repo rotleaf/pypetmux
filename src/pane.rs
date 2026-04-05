@@ -2,6 +2,8 @@ use pyo3::{exceptions::PyRuntimeError, prelude::*};
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use std::process::{Command, Stdio};
 
+use crate::subclasses::prev_cmd::LastCommand;
+
 #[gen_stub_pyclass]
 #[pyclass(get_all)]
 pub struct Pane {
@@ -466,24 +468,29 @@ impl Pane {
         Ok(true)
     }
 
-    /// Repeat the previous command in this pane's bash shell.
-    ///
-    /// Returns:
-    ///     True on success.
-    ///
-    /// Raises:
-    ///     RuntimeError: If the pane is not currently running bash.
-    pub fn run_previous_command(&self) -> PyResult<bool> {
-        match self.current_command() {
-            Some(cmd) if cmd == "bash" => self.send_keys("fc -s".to_string(), true, false),
-            Some(cmd) => Err(PyRuntimeError::new_err(format!(
-                "previous_command requires bash, current command is {:?}",
-                cmd
-            ))),
-            None => Err(PyRuntimeError::new_err(
-                "could not determine current command",
-            )),
-        }
+    // /// Repeat the previous command in this pane's bash shell.
+    // ///
+    // /// Returns:
+    // ///     True on success.
+    // ///
+    // /// Raises:
+    // ///     RuntimeError: If the pane is not currently running bash.
+    // pub fn run_previous_command(&self) -> PyResult<bool> {
+    //     match self.current_command() {
+    //         Some(cmd) if cmd == "bash" => self.send_keys("fc -s".to_string(), true, false),
+    //         Some(cmd) => Err(PyRuntimeError::new_err(format!(
+    //             "previous_command requires bash, current command is {:?}",
+    //             cmd
+    //         ))),
+    //         None => Err(PyRuntimeError::new_err(
+    //             "could not determine current command",
+    //         )),
+    //     }
+    // }
+
+    #[getter]
+    pub fn last_command(&self) -> LastCommand {
+        LastCommand::new(self.pane_id.clone(), self.socket.clone())
     }
 
     fn __repr__(&self) -> String {

@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 pub mod pane;
 pub mod server;
 pub mod session;
+pub mod subclasses;
 pub mod window;
 
 pyo3_stub_gen::define_stub_info_gatherer!(stub_info);
