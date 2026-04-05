@@ -69,7 +69,7 @@ impl Session {
     }
 
     /// get a list of all windows in a session
-    /// #[getter]
+    #[getter]
     pub fn windows(&self) -> Vec<Window> {
         let target = self.name.clone();
         let output = self

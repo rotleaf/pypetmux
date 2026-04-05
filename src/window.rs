@@ -237,6 +237,114 @@ impl Window {
             flags: parts[6].to_string(),
         })
     }
+
+    /// Move to the next tmux window in this session and return it.
+    ///
+    /// Returns:
+    ///     The newly selected Window, or None if the operation fails.
+    #[getter]
+    pub fn next(&self) -> Option<Window> {
+        let session_target = self.session_name.as_str();
+
+        let output = self
+            .cmd()
+            .args(["next-window", "-t", session_target])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .output()
+            .ok()?;
+
+        if !output.status.success() {
+            return None;
+        }
+
+        let output = self
+            .cmd()
+            .args([
+                "display-message",
+                "-p",
+                "-t",
+                session_target,
+                "#{window_index}|#{window_name}",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .output()
+            .ok()?;
+
+        if !output.status.success() {
+            return None;
+        }
+
+        let raw = String::from_utf8_lossy(&output.stdout);
+        let parts: Vec<&str> = raw.trim().split('|').collect();
+
+        if parts.len() != 2 {
+            return None;
+        }
+
+        let index = parts[0].parse::<u32>().ok()?;
+        let name = parts[1].to_string();
+
+        Some(Window {
+            session_name: self.session_name.clone(),
+            index,
+            name,
+            socket: self.socket.clone(),
+        })
+    }
+
+    #[getter]
+    pub fn previous(&self) -> Option<Window> {
+        let session_target = self.session_name.as_str();
+
+        let output = self
+            .cmd()
+            .args(["previous-window", "-t", session_target])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .output()
+            .ok()?;
+
+        if !output.status.success() {
+            return None;
+        }
+
+        let output = self
+            .cmd()
+            .args([
+                "display-message",
+                "-p",
+                "-t",
+                session_target,
+                "#{window_index}|#{window_name}",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .output()
+            .ok()?;
+
+        if !output.status.success() {
+            return None;
+        }
+
+        let raw = String::from_utf8_lossy(&output.stdout);
+        let parts: Vec<&str> = raw.trim().split('|').collect();
+
+        if parts.len() != 2 {
+            return None;
+        }
+
+        let index = parts[0].parse::<u32>().ok()?;
+        let name = parts[1].to_string();
+
+        Some(Window {
+            session_name: self.session_name.clone(),
+            index,
+            name,
+            socket: self.socket.clone(),
+        })
+    }
 }
 
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {

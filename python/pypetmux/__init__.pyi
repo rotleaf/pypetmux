@@ -27,8 +27,92 @@ class Pane:
     @property
     def socket(self) -> typing.Optional[builtins.str]: ...
     @property
-    def capture(self) -> typing.Optional[builtins.str]: ...
+    def select(self) -> builtins.bool:
+        r"""
+        select this pane
+        """
+    @property
+    def clear(self) -> builtins.bool:
+        r"""
+        clear a panes history
+        """
+    @property
+    def is_alive(self) -> builtins.bool:
+        r"""
+        Whether the pane is alive.
+        """
+    @property
+    def current_command(self) -> typing.Optional[builtins.str]:
+        r"""
+        get this shells current command/program
+        will be the shell name if no program is active
+        """
+    @property
+    def current_commandline(self) -> typing.Optional[builtins.str]:
+        r"""
+        get this panes current running command with its arguments
+        will be the shell name if no program is active
+        """
     def __new__(cls, session_name: builtins.str, window_index: builtins.int, pane_index: builtins.int, pane_id: builtins.str, title: builtins.str, socket: typing.Optional[builtins.str]) -> Pane: ...
+    def send_keys(self, keys: builtins.str, enter: builtins.bool = False, clear_first: builtins.bool = False) -> builtins.bool: ...
+    def capture(self, trim: builtins.bool = False) -> typing.Optional[builtins.str]:
+        r"""
+        capture a panes content
+        Args: trim - remove trailing whitespaces from the capture output
+        """
+    def kill(self) -> builtins.bool:
+        r"""
+        Kill this pane.
+        """
+    def resize(self, direction: builtins.str, amount: builtins.int) -> builtins.bool:
+        r"""
+        Resize the pane.
+        
+        Args:
+            direction: One of "left", "right", "up", or "down".
+            amount: Number of cells to resize by.
+        """
+    def split(self, horizontal: builtins.bool = False, command: typing.Optional[builtins.str] = None, keep: builtins.bool = True) -> Pane:
+        r"""
+        Split this pane and return the new pane.
+        
+        Args:
+            horizontal: Split horizontally if True, vertically otherwise.
+            command: Optional command to run in the new pane.
+        """
+    def rename_title(self, title: builtins.str) -> builtins.bool:
+        r"""
+        Rename the pane title.
+        
+        Args:
+            title: New pane title.
+        """
+    def respawn(self, command: typing.Optional[builtins.str] = None, kill: builtins.bool = False) -> builtins.bool:
+        r"""
+        Respawn the pane.
+        
+        Args:
+            command: Optional command to run after respawning.
+            kill: Kill the existing pane process first.
+        """
+    def bash_shell(self, respawn: builtins.bool = False) -> builtins.bool:
+        r"""
+        Change this pane to bash.
+        
+        Args:
+            respawn: If True, kill the current pane process and respawn it as bash.
+                     If False, run `exec bash` inside the pane.
+        """
+    def run_previous_command(self) -> builtins.bool:
+        r"""
+        Repeat the previous command in this pane's bash shell.
+        
+        Returns:
+            True on success.
+        
+        Raises:
+            RuntimeError: If the pane is not currently running bash.
+        """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
 
@@ -82,14 +166,14 @@ class Session:
         """
     @property
     def socket(self) -> typing.Optional[builtins.str]: ...
-    def __new__(cls, name: builtins.str, socket: typing.Optional[builtins.str] = None) -> Session: ...
-    def __repr__(self) -> builtins.str: ...
-    def __str__(self) -> builtins.str: ...
+    @property
     def windows(self) -> builtins.list[Window]:
         r"""
         get a list of all windows in a session
-        #[getter]
         """
+    def __new__(cls, name: builtins.str, socket: typing.Optional[builtins.str] = None) -> Session: ...
+    def __repr__(self) -> builtins.str: ...
+    def __str__(self) -> builtins.str: ...
     def metadata(self) -> SessionMetadata:
         r"""
         get session metadata
@@ -142,6 +226,16 @@ class Window:
         r"""
         get window metadata
         """
+    @property
+    def next(self) -> typing.Optional[Window]:
+        r"""
+        Move to the next tmux window in this session and return it.
+        
+        Returns:
+            The newly selected Window, or None if the operation fails.
+        """
+    @property
+    def previous(self) -> typing.Optional[Window]: ...
     def __new__(cls, session_name: builtins.str, index: builtins.int, socket: typing.Optional[builtins.str], name: builtins.str) -> Window: ...
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
