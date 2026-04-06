@@ -349,6 +349,7 @@ impl Window {
 
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Window>()?;
+    m.add_class::<WindowMetadata>()?;
     // pane::register(m)?;
     Ok(())
 }

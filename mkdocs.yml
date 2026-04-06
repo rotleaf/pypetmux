@@ -1,0 +1,27 @@
+site_name: pypetmux
+site_description: Python bindings for tmux
+repo_url: https://github.com/rotleaf/pypetmux
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - API:
+      - Server: api/server.md
+      - Session: api/session.md
+      - Window: api/window.md
+      - Pane: api/pane.md

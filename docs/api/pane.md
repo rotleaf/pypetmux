@@ -1,0 +1,3 @@
+# Pane API
+
+::: pypetmux.Pane

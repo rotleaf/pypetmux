@@ -1,0 +1,3 @@
+# Window API
+
+::: pypetmux.Window
