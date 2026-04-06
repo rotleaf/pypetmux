@@ -50,6 +50,11 @@ class Pane:
     def pane_id(self) -> builtins.str: ...
     @property
     def title(self) -> builtins.str: ...
+    @title.setter
+    def title(self, value: builtins.str) -> None:
+        r"""
+        Rename the pane title.
+        """
     @property
     def socket(self) -> typing.Optional[builtins.str]: ...
     @property
@@ -72,21 +77,48 @@ class Pane:
         r"""
         get this shells current command/program
         will be the shell name if no program is active
+        
+        Returns:
+            a string of the current program running on the pane. e.g. `ping -q google.com` will only return `ping`
         """
     @property
     def current_commandline(self) -> typing.Optional[builtins.str]:
         r"""
         get this panes current running command with its arguments
-        will be the shell name if no program is active
+        
+        Returns:
+            the program ran in the pane with the arguments used. e.g. `ping -q google.com`
         """
     @property
-    def last_command(self) -> LastCommand: ...
+    def last_command(self) -> LastCommand:
+        r"""
+        get the last command used in this pane 
+        
+        Returns:
+            LastCommand
+        """
     def __new__(cls, session_name: builtins.str, window_index: builtins.int, pane_index: builtins.int, pane_id: builtins.str, title: builtins.str, socket: typing.Optional[builtins.str]) -> Pane: ...
-    def send_keys(self, keys: builtins.str, enter: builtins.bool = False, clear_first: builtins.bool = False) -> builtins.bool: ...
+    def send_keys(self, keys: builtins.str, enter: builtins.bool = False, clear_first: builtins.bool = False) -> builtins.bool:
+        r"""
+        send keys to a pane 
+        
+        Args:
+            keys: the keys/commands to send to the pane 
+            enter: whether to send enter command and run the command sent
+            clear_first: first clear the screen before running the command 
+        
+        Returns:
+            True if successfully sent keys
+        """
     def capture(self, trim: builtins.bool = False) -> typing.Optional[builtins.str]:
         r"""
         capture a panes content
-        Args: trim - remove trailing whitespaces from the capture output
+        
+        Args: 
+            trim: remove trailing whitespaces from the capture output
+        
+        Returns:
+            a string of the pane content. any character visible in the pane will ne returned
         """
     def kill(self) -> builtins.bool:
         r"""
@@ -107,13 +139,7 @@ class Pane:
         Args:
             horizontal: Split horizontally if True, vertically otherwise.
             command: Optional command to run in the new pane.
-        """
-    def rename_title(self, title: builtins.str) -> builtins.bool:
-        r"""
-        Rename the pane title.
-        
-        Args:
-            title: New pane title.
+            keep: keep the split running after execution is complete, defaults to true
         """
     def respawn(self, command: typing.Optional[builtins.str] = None, kill: builtins.bool = False) -> builtins.bool:
         r"""
@@ -140,25 +166,35 @@ class Server:
     def sessions(self) -> builtins.list[Session]:
         r"""
         list sessions in this server
+        
+        Returns:
+            A list of Session in this server
         """
     @property
     def is_running(self) -> builtins.bool:
         r"""
         check if a tmux server is running
+        
+        Returns:
+            True if running, False if not
         """
     @property
     def current_socket(self) -> typing.Optional[builtins.str]:
         r"""
         get the tmux socket path for this server
-        
         if a socket was explicitly provided, that is returned.
         otherwise, the default tmux socket path is returned.
+        
+        Returns:
+            str
         """
     def __new__(cls, socket: typing.Optional[builtins.str] = None) -> Server: ...
     def new_session(self, name: builtins.str) -> Session:
         r"""
         create a new session
-        returns a Session Object
+        
+        Returns:
+            Session
         """
     def kill(self) -> builtins.bool:
         r"""
@@ -166,11 +202,14 @@ class Server:
         """
     def has_session(self, name: builtins.str) -> builtins.bool:
         r"""
-        check if the server contains a session
+        check if the server contains a session using a session name 
+        
+        Returns: 
+            True if the session name provided exists, False if not
         """
     def start(self) -> builtins.bool:
         r"""
-        start a tmux server
+        start a tmux server if none is running
         """
 
 @typing.final
@@ -188,6 +227,9 @@ class Session:
     def windows(self) -> builtins.list[Window]:
         r"""
         get a list of all windows in a session
+        
+        Returns:
+            Window
         """
     def __new__(cls, name: builtins.str, socket: typing.Optional[builtins.str] = None) -> Session: ...
     def __repr__(self) -> builtins.str: ...
@@ -195,8 +237,19 @@ class Session:
     def metadata(self) -> SessionMetadata:
         r"""
         get session metadata
+        
+        Returns:
+            SessionMetadata 
+        
+        Raises: RuntimeError on failure
         """
-    def kill(self) -> builtins.bool: ...
+    def kill(self) -> builtins.bool:
+        r"""
+        kill this session 
+        
+        Returns:
+            True if the operation is successful
+        """
 
 @typing.final
 class SessionMetadata:
@@ -233,16 +286,25 @@ class Window:
     def select(self) -> builtins.bool:
         r"""
         select a window if not selected
+        
+        Returns:
+            True if selected, False if the operation failed
         """
     @property
     def panes(self) -> builtins.list[Pane]:
         r"""
         list panes in a window
+        
+        Returns:
+            a list of panes available in this window
         """
     @property
     def metadata(self) -> WindowMetadata:
         r"""
         get window metadata
+        
+        Returns:
+            WindowMetadata
         """
     @property
     def next(self) -> typing.Optional[Window]:
@@ -253,13 +315,22 @@ class Window:
             The newly selected Window, or None if the operation fails.
         """
     @property
-    def previous(self) -> typing.Optional[Window]: ...
+    def previous(self) -> typing.Optional[Window]:
+        r"""
+        Move to the previous tmux window in this session and return it.
+        
+        Returns:
+            The newly selected Window, or None if the operation fails.
+        """
     def __new__(cls, session_name: builtins.str, index: builtins.int, socket: typing.Optional[builtins.str], name: builtins.str) -> Window: ...
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
     def kill(self) -> builtins.bool:
         r"""
-        kill window
+        kill this window
+        
+        Returns:
+            True if killed successfully, False if the operation failed
         """
 
 @typing.final

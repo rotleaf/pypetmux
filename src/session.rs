@@ -69,6 +69,9 @@ impl Session {
     }
 
     /// get a list of all windows in a session
+    ///
+    /// Returns:
+    ///     Window
     #[getter]
     pub fn windows(&self) -> Vec<Window> {
         let target = self.name.clone();
@@ -127,6 +130,11 @@ impl Session {
     }
 
     /// get session metadata
+    ///
+    /// Returns:
+    ///     SessionMetadata 
+    ///
+    /// Raises: RuntimeError on failure
     pub fn metadata(&self) -> PyResult<SessionMetadata> {
         let fmt = "#{session_id}|#{session_name}|#{session_created}|#{session_attached}|#{session_width}|#{session_height}|#{session_windows}";
 
@@ -181,7 +189,12 @@ impl Session {
             self.name
         )))
     }
-
+    
+    
+    /// kill this session 
+    ///
+    /// Returns:
+    ///     True if the operation is successful 
     pub fn kill(&self) -> bool {
         self.cmd()
             .args(["kill-session", "-t", &self.name])

@@ -53,7 +53,9 @@ impl Server {
     }
 
     /// create a new session
-    /// returns a Session Object
+    ///
+    /// Returns:
+    ///     Session
     // TODO: make name optional
     pub fn new_session(&self, name: String) -> PyResult<Session> {
         let output = self
@@ -77,6 +79,9 @@ impl Server {
     }
 
     /// list sessions in this server
+    ///
+    /// Returns:
+    ///     A list of Session in this server
     #[getter]
     pub fn sessions(&self) -> Vec<Session> {
         let output = self
@@ -101,6 +106,9 @@ impl Server {
     }
 
     /// check if a tmux server is running
+    ///
+    /// Returns:
+    ///     True if running, False if not 
     #[getter]
     pub fn is_running(&self) -> bool {
         self.cmd()
@@ -123,7 +131,10 @@ impl Server {
             .unwrap_or(false)
     }
 
-    /// check if the server contains a session
+    /// check if the server contains a session using a session name 
+    ///
+    /// Returns: 
+    ///     True if the session name provided exists, False if not
     pub fn has_session(&self, name: String) -> bool {
         self.cmd()
             .args(["has-session", "-t", &name])
@@ -134,7 +145,8 @@ impl Server {
             .unwrap_or(false)
     }
 
-    /// start a tmux server
+    /// start a tmux server if none is running
+    ///
     pub fn start(&self) -> bool {
         self.cmd()
             .arg("start-server")
@@ -146,9 +158,11 @@ impl Server {
     }
 
     /// get the tmux socket path for this server
-    ///
     /// if a socket was explicitly provided, that is returned.
     /// otherwise, the default tmux socket path is returned.
+    ///
+    /// Returns:
+    ///     str
     #[getter]
     pub fn current_socket(&self) -> Option<String> {
         if let Some(socket) = &self.socket {

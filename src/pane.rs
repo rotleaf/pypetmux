@@ -36,7 +36,17 @@ impl Pane {
             socket,
         }
     }
-
+    
+    /// send keys to a pane 
+    ///
+    /// Args:
+    ///     keys: the keys/commands to send to the pane 
+    ///     enter: whether to send enter command and run the command sent
+    ///     clear_first: first clear the screen before running the command 
+    /// 
+    /// Returns:
+    ///     True if successfully sent keys
+    ///
     #[pyo3(signature = (keys, enter = false, clear_first=false))]
     pub fn send_keys(&self, keys: String, enter: bool, clear_first: bool) -> PyResult<bool> {
         let mut cmd = self.cmd();
@@ -121,7 +131,12 @@ impl Pane {
     }
 
     /// capture a panes content
-    /// Args: trim - remove trailing whitespaces from the capture output
+    ///
+    /// Args: 
+    ///     trim: remove trailing whitespaces from the capture output
+    ///
+    /// Returns:
+    ///     a string of the pane content. any character visible in the pane will ne returned
     #[pyo3(signature=(trim=false))]
     pub fn capture(&self, trim: bool) -> Option<String> {
         let output = self
@@ -225,6 +240,7 @@ impl Pane {
     /// Args:
     ///     horizontal: Split horizontally if True, vertically otherwise.
     ///     command: Optional command to run in the new pane.
+    ///     keep: keep the split running after execution is complete, defaults to true
     ///
     #[pyo3(signature = (horizontal = false, command = None, keep=true))]
     pub fn split(&self, horizontal: bool, command: Option<String>, keep: bool) -> PyResult<Pane> {
@@ -288,10 +304,8 @@ impl Pane {
     }
 
     /// Rename the pane title.
-    ///
-    /// Args:
-    ///     title: New pane title.
-    pub fn rename_title(&mut self, title: String) -> PyResult<bool> {
+    #[setter]
+    pub fn set_title(&mut self, title: String) -> PyResult<()> {
         let output = self
             .cmd()
             .args(["select-pane", "-T", &title, "-t", self.target()])
@@ -308,7 +322,7 @@ impl Pane {
         }
 
         self.title = title;
-        Ok(true)
+        Ok(())
     }
 
     /// Respawn the pane.
@@ -368,6 +382,9 @@ impl Pane {
 
     /// get this shells current command/program
     /// will be the shell name if no program is active
+    ///
+    /// Returns:
+    ///     a string of the current program running on the pane. e.g. `ping -q google.com` will only return `ping`
     #[getter]
     pub fn current_command(&self) -> Option<String> {
         let output = self
@@ -393,7 +410,9 @@ impl Pane {
     }
 
     /// get this panes current running command with its arguments
-    /// will be the shell name if no program is active
+    ///
+    /// Returns:
+    ///     the program ran in the pane with the arguments used. e.g. `ping -q google.com`
     #[getter]
     pub fn current_commandline(&self) -> Option<String> {
         let pid_output = self
@@ -487,7 +506,11 @@ impl Pane {
     //         )),
     //     }
     // }
-
+    
+    /// get the last command used in this pane 
+    ///
+    /// Returns:
+    ///     LastCommand
     #[getter]
     pub fn last_command(&self) -> LastCommand {
         LastCommand::new(self.pane_id.clone(), self.socket.clone())
@@ -526,5 +549,6 @@ impl Pane {
 
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Pane>()?;
+    m.add_class::<LastCommand>()?;
     Ok(())
 }

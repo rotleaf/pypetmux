@@ -81,7 +81,10 @@ impl Window {
         self.__repr__()
     }
 
-    /// kill window
+    /// kill this window
+    ///
+    /// Returns:
+    ///     True if killed successfully, False if the operation failed
     pub fn kill(&self) -> bool {
         let target = self.target();
         self.cmd()
@@ -94,6 +97,9 @@ impl Window {
     }
 
     /// select a window if not selected
+    ///
+    /// Returns:
+    ///     True if selected, False if the operation failed
     #[getter]
     pub fn select(&self) -> bool {
         let target = self.target();
@@ -130,6 +136,9 @@ impl Window {
     }
 
     /// list panes in a window
+    ///
+    /// Returns:
+    ///     a list of panes available in this window
     #[getter]
     pub fn panes(&self) -> Vec<Pane> {
         let target = self.target();
@@ -175,6 +184,9 @@ impl Window {
     }
 
     /// get window metadata
+    ///
+    /// Returns:
+    ///     WindowMetadata
     #[getter]
     pub fn metadata(&self) -> PyResult<WindowMetadata> {
         let target = self.target();
@@ -293,7 +305,11 @@ impl Window {
             socket: self.socket.clone(),
         })
     }
-
+    
+    /// Move to the previous tmux window in this session and return it.
+    ///
+    /// Returns:
+    ///     The newly selected Window, or None if the operation fails.
     #[getter]
     pub fn previous(&self) -> Option<Window> {
         let session_target = self.session_name.as_str();
