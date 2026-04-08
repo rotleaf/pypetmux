@@ -305,7 +305,7 @@ impl Window {
             socket: self.socket.clone(),
         })
     }
-    
+
     /// Move to the previous tmux window in this session and return it.
     ///
     /// Returns:

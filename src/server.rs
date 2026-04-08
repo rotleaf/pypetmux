@@ -9,7 +9,7 @@ use std::{
     process::{Command, ExitStatus},
 };
 
-use crate::session::Session;
+use crate::{pane::Pane, session::Session, window::Window};
 
 #[gen_stub_pyclass]
 #[pyclass]
@@ -108,7 +108,7 @@ impl Server {
     /// check if a tmux server is running
     ///
     /// Returns:
-    ///     True if running, False if not 
+    ///     True if running, False if not
     #[getter]
     pub fn is_running(&self) -> bool {
         self.cmd()
@@ -131,9 +131,9 @@ impl Server {
             .unwrap_or(false)
     }
 
-    /// check if the server contains a session using a session name 
+    /// check if the server contains a session using a session name
     ///
-    /// Returns: 
+    /// Returns:
     ///     True if the session name provided exists, False if not
     pub fn has_session(&self, name: String) -> bool {
         self.cmd()
@@ -187,6 +187,122 @@ impl Server {
         }
 
         Self::default_socket_path()
+    }
+
+    /// get a Pane object directly from a pane target like "mysess:0.1"
+    ///
+    /// Returns:
+    ///     Pane
+    pub fn target_pane(&self, target: String) -> PyResult<Pane> {
+        let output = self
+            .cmd()
+            .args([
+                "display-message",
+                "-p",
+                "-t",
+                &target,
+                "#{session_name}\t#{window_index}\t#{pane_index}\t#{pane_id}\t#{pane_title}",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| PyRuntimeError::new_err(format!("Failed to run tmux: {e}")))?;
+
+        if !output.status.success() {
+            return Err(PyRuntimeError::new_err(format!(
+                "pane target not found: {}",
+                String::from_utf8_lossy(&output.stderr)
+            )));
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let mut parts = stdout.splitn(5, '\t');
+
+        let session_name = parts
+            .next()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| PyRuntimeError::new_err("missing session_name from tmux output"))?
+            .to_string();
+
+        let window_index = parts
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("missing window_index from tmux output"))?
+            .parse::<u32>()
+            .map_err(|e| PyRuntimeError::new_err(format!("invalid window_index: {e}")))?;
+
+        let pane_index = parts
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("missing pane_index from tmux output"))?
+            .parse::<u32>()
+            .map_err(|e| PyRuntimeError::new_err(format!("invalid pane_index: {e}")))?;
+
+        let pane_id = parts
+            .next()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| PyRuntimeError::new_err("missing pane_id from tmux output"))?
+            .to_string();
+
+        let title = parts.next().unwrap_or("").to_string();
+
+        Ok(Pane {
+            session_name,
+            window_index,
+            pane_index,
+            pane_id,
+            title,
+            socket: self.socket.clone(),
+        })
+    }
+
+    /// get a Window object directly from a window target like "mysess:0"
+    ///
+    /// Returns:
+    ///     Window
+    pub fn target_window(&self, target: String) -> PyResult<Window> {
+        let output = self
+            .cmd()
+            .args([
+                "display-message",
+                "-p",
+                "-t",
+                &target,
+                "#{session_name}\t#{window_index}\t#{window_name}",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| PyRuntimeError::new_err(format!("Failed to run tmux: {e}")))?;
+
+        if !output.status.success() {
+            return Err(PyRuntimeError::new_err(format!(
+                "window target not found: {}",
+                String::from_utf8_lossy(&output.stderr)
+            )));
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let mut parts = stdout.splitn(3, '\t');
+
+        let session_name = parts
+            .next()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| PyRuntimeError::new_err("missing session_name from tmux output"))?
+            .to_string();
+
+        let index = parts
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("missing window_index from tmux output"))?
+            .parse::<u32>()
+            .map_err(|e| PyRuntimeError::new_err(format!("invalid window_index: {e}")))?;
+
+        let name = parts.next().unwrap_or("").to_string();
+
+        Ok(Window {
+            session_name,
+            index,
+            socket: self.socket.clone(),
+            name,
+        })
     }
 }
 

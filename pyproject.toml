@@ -11,6 +11,8 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
+description = "A simple tmux wrapper for python"
+readme = "README.md"
 
 [tool.maturin]
 features = ["extension-module"]

@@ -132,7 +132,7 @@ impl Session {
     /// get session metadata
     ///
     /// Returns:
-    ///     SessionMetadata 
+    ///     SessionMetadata
     ///
     /// Raises: RuntimeError on failure
     pub fn metadata(&self) -> PyResult<SessionMetadata> {
@@ -189,12 +189,11 @@ impl Session {
             self.name
         )))
     }
-    
-    
-    /// kill this session 
+
+    /// kill this session
     ///
     /// Returns:
-    ///     True if the operation is successful 
+    ///     True if the operation is successful
     pub fn kill(&self) -> bool {
         self.cmd()
             .args(["kill-session", "-t", &self.name])

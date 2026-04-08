@@ -92,7 +92,7 @@ class Pane:
     @property
     def last_command(self) -> LastCommand:
         r"""
-        get the last command used in this pane 
+        get the last command used in this pane
         
         Returns:
             LastCommand
@@ -100,22 +100,24 @@ class Pane:
     def __new__(cls, session_name: builtins.str, window_index: builtins.int, pane_index: builtins.int, pane_id: builtins.str, title: builtins.str, socket: typing.Optional[builtins.str]) -> Pane: ...
     def send_keys(self, keys: builtins.str, enter: builtins.bool = False, clear_first: builtins.bool = False) -> builtins.bool:
         r"""
-        send keys to a pane 
+        send keys to a pane
         
         Args:
-            keys: the keys/commands to send to the pane 
+            keys: the keys/commands to send to the pane
             enter: whether to send enter command and run the command sent
-            clear_first: first clear the screen before running the command 
+            clear_first: first clear the screen before running the command
         
         Returns:
             True if successfully sent keys
         """
-    def capture(self, trim: builtins.bool = False) -> typing.Optional[builtins.str]:
+    def capture(self, trim: builtins.bool = False, scroll_back: typing.Optional[builtins.int] = None, full: builtins.bool = False) -> typing.Optional[builtins.str]:
         r"""
         capture a panes content
         
-        Args: 
+        Args:
             trim: remove trailing whitespaces from the capture output
+            scroll_back: scroll back this number of lines
+            full: capture full pane output
         
         Returns:
             a string of the pane content. any character visible in the pane will ne returned
@@ -202,14 +204,28 @@ class Server:
         """
     def has_session(self, name: builtins.str) -> builtins.bool:
         r"""
-        check if the server contains a session using a session name 
+        check if the server contains a session using a session name
         
-        Returns: 
+        Returns:
             True if the session name provided exists, False if not
         """
     def start(self) -> builtins.bool:
         r"""
         start a tmux server if none is running
+        """
+    def target_pane(self, target: builtins.str) -> Pane:
+        r"""
+        get a Pane object directly from a pane target like "mysess:0.1"
+        
+        Returns:
+            Pane
+        """
+    def target_window(self, target: builtins.str) -> Window:
+        r"""
+        get a Window object directly from a window target like "mysess:0"
+        
+        Returns:
+            Window
         """
 
 @typing.final
@@ -239,13 +255,13 @@ class Session:
         get session metadata
         
         Returns:
-            SessionMetadata 
+            SessionMetadata
         
         Raises: RuntimeError on failure
         """
     def kill(self) -> builtins.bool:
         r"""
-        kill this session 
+        kill this session
         
         Returns:
             True if the operation is successful

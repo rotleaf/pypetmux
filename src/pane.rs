@@ -36,14 +36,14 @@ impl Pane {
             socket,
         }
     }
-    
-    /// send keys to a pane 
+
+    /// send keys to a pane
     ///
     /// Args:
-    ///     keys: the keys/commands to send to the pane 
+    ///     keys: the keys/commands to send to the pane
     ///     enter: whether to send enter command and run the command sent
-    ///     clear_first: first clear the screen before running the command 
-    /// 
+    ///     clear_first: first clear the screen before running the command
+    ///
     /// Returns:
     ///     True if successfully sent keys
     ///
@@ -132,16 +132,28 @@ impl Pane {
 
     /// capture a panes content
     ///
-    /// Args: 
+    /// Args:
     ///     trim: remove trailing whitespaces from the capture output
+    ///     scroll_back: scroll back this number of lines
+    ///     full: capture full pane output
     ///
     /// Returns:
     ///     a string of the pane content. any character visible in the pane will ne returned
-    #[pyo3(signature=(trim=false))]
-    pub fn capture(&self, trim: bool) -> Option<String> {
+    #[pyo3(signature=(trim=false, scroll_back=None, full=false))]
+    pub fn capture(&self, trim: bool, scroll_back: Option<u32>, full: bool) -> Option<String> {
+        let mut args = vec!["capture-pane", "-p", "-t", self.target()];
+
+        let scroll_str = scroll_back.map(|n| format!("-{}", n));
+
+        if full {
+            args.extend_from_slice(&["-S", "-"]);
+        } else if let Some(ref s) = scroll_str {
+            args.extend_from_slice(&["-S", s]);
+        }
+
         let output = self
             .cmd()
-            .args(["capture-pane", "-p", "-t", self.target()])
+            .args(&args)
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             .output()
@@ -170,7 +182,6 @@ impl Pane {
             None
         }
     }
-
     /// Kill this pane.
     pub fn kill(&self) -> PyResult<bool> {
         let output = self
@@ -506,8 +517,8 @@ impl Pane {
     //         )),
     //     }
     // }
-    
-    /// get the last command used in this pane 
+
+    /// get the last command used in this pane
     ///
     /// Returns:
     ///     LastCommand
